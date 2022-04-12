@@ -1,31 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
+import React, {useEffect, useState} from 'react';
+import {Button, Card, CardColumns, Container, Jumbotron} from 'react-bootstrap';
 import Auth from '../utils/auth';
-import { removeBookId } from '../utils';
+import {DELETE_BOOK, GET_SINGLE_USER, removeBookId} from '../utils';
 import {useMutation, useQuery} from "@apollo/client";
-import {DELETE_BOOK, GET_SINGLE_USER} from "../utils";
+import {useHistory} from "react-router-dom";
+
+
 
 const SavedBooks = () => {
+
+  const shouldRedirectUser = !Auth.loggedIn() || Auth.isTokenExpired()
+
+  const history=useHistory()
+
+  if(shouldRedirectUser){
+    history.push('/')
+  }
+
   const [userData, setUserData] = useState({});
-  //TODO test if this works
-  const {data, error} = useQuery(GET_SINGLE_USER)
-  const [deleteBook,{error:errorDeleteBook}]=useMutation(DELETE_BOOK)
+  const {data} = useQuery(GET_SINGLE_USER,{
+    fetchPolicy:'cache-and-network'
+  })
+  const [deleteBook]=useMutation(DELETE_BOOK,{
+    refetchQueries:[GET_SINGLE_USER]
+  })
 
   // use this to determine if `useEffect()` hook needs to run again
   const userDataLength = Object.keys(userData).length;
 
-  //TODO
   useEffect(() => {
     try{
       if(data?.getSingleUser){
-          console.log(data.getSingleUser)
           setUserData(data?.getSingleUser)
       }
-      // console.log(error)
     }catch (e) {
       console.log(e)
     }
-  }, [data]);
+  },[data]);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -36,9 +47,8 @@ const SavedBooks = () => {
     }
 
     try {
-      //TODO test if this works
-      // upon success, remove book's id from localStorage
       const {data} = await deleteBook({variables: {bookId}});
+      console.log(data)
       setUserData(data.deleteBook);
       removeBookId(bookId)
     } catch (err) {

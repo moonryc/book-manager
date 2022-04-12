@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Jumbotron, Container, Col, Form, Button, Card, CardColumns } from 'react-bootstrap';
+import React, {useEffect, useState} from 'react';
+import {Button, Card, CardColumns, Col, Container, Form, Jumbotron} from 'react-bootstrap';
 import Auth from '../utils/auth';
-import { saveBookIds, getSavedBookIds } from '../utils';
-
-import { SAVE_BOOK, searchGoogleBooks } from '../utils';
+import {GET_SINGLE_USER, getSavedBookIds, SAVE_BOOK, saveBookIds, searchGoogleBooks} from '../utils';
 import {useMutation} from "@apollo/client";
 
 const SearchBooks = () => {
@@ -68,7 +66,6 @@ const SearchBooks = () => {
     }
 
     try {
-      console.log(bookToSave)
       await saveBook({variables:{book: {...bookToSave}}});
       if(error){
         return
